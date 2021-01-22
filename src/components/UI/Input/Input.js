@@ -10,7 +10,7 @@ const Input = (props) => {
         inputClasses.push(classes.Invalid);
         validationError=<p>Please enter a valid value!</p>
     }
-    console.log(props.elementConfig);
+    // console.log(props.elementConfig);
     switch (props.elementType) {
         case ('input'):
             inputElemet = <input
