@@ -8,6 +8,7 @@ import axios from "../../../axios-orders";
 import Input from "../../../components/UI/Input/Input";
 import withErrorHandler from "../../../hoc/withErrorHandler/withErrorHandler";
 import * as actions from "../../../store/actions/IndexActions";
+import { updateObject, checkValidity } from "../../../shared/utility";
 
 class ContactData extends Component {
   state = {
@@ -111,48 +112,44 @@ class ContactData extends Component {
       price: this.props.price,
       deliveryMethod: "fastest",
       orderData: formData,
+      userId: this.props.userId,
     };
 
     this.props.onOrderBurger(order, this.props.token);
   };
 
-  checkValidity = (value, rules) => {
-    let isValid = true;
-
-    if (!rules) {
-      return true;
-    }
-    if (rules.required) {
-      isValid = value.trim() !== "" && isValid;
-    }
-    if (rules.minLength) {
-      isValid = value.length >= rules.minLength && isValid;
-    }
-    if (rules.maxLength) {
-      isValid = value.length <= rules.maxLength && isValid;
-    }
-    return isValid;
-  };
-
   inputChangedHandler = (e, inputIdentifier) => {
     // console.log(e.target.value);
     // console.log(inputIdentifier);
-    const updatedOrderForm = {
-      ...this.state.orderForm,
-    };
+
     // console.log(updatedOrderForm);
-    const updatedFormElement = {
-      ...updatedOrderForm[inputIdentifier],
-    };
+    // const updatedFormElement = {
+    //   ...updatedOrderForm[inputIdentifier],
+    // };
+    const updatedFormElement = updateObject(
+      this.state.orderForm[inputIdentifier],
+      {
+        value: e.target.value,
+        valid: checkValidity(
+          e.target.value,
+          this.state.orderForm[inputIdentifier].validation
+        ),
+        touched: true,
+      }
+    );
+
+    const updatedOrderForm = updateObject(this.state.orderForm, {
+      [inputIdentifier]: updatedFormElement,
+    });
     // console.log(updatedFormElement);
     // console.log(inputIdentifier);
-    updatedFormElement.value = e.target.value;
-    updatedOrderForm[inputIdentifier] = updatedFormElement;
-    updatedFormElement.valid = this.checkValidity(
-      updatedFormElement.value,
-      updatedFormElement.validation
-    );
-    updatedFormElement.touched = true;
+    // updatedFormElement.value = e.target.value;
+    // updatedOrderForm[inputIdentifier] = updatedFormElement;
+    // updatedFormElement.valid = this.checkValidity(
+    //   updatedFormElement.value,
+    //   updatedFormElement.validation
+    // );
+    // updatedFormElement.touched = true;
     // console.log(updatedFormElement);
     let formIsValid = true;
     for (let inputIdentifier in updatedOrderForm) {
@@ -212,12 +209,14 @@ const mapStateToProps = (state) => {
     price: state.burgerBuilder.totalPrice,
     loading: state.order.loading,
     token: state.auth.idToken,
+    userId: state.auth.userId,
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onOrderBurger: (orderData, token) => dispatch(actions.purchaseBurger(orderData, token)),
+    onOrderBurger: (orderData, token) =>
+      dispatch(actions.purchaseBurger(orderData, token)),
   };
 };
 
